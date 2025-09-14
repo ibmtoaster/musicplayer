@@ -122,12 +122,13 @@ def status():
         length = player.get_length() // 1000
         time_pos = player.get_time() // 1000
 
-        # If VLC says playback ended → snap to finished
         if state == vlc.State.Ended:
+            # Force it to show full length when finished
             return jsonify({
                 "file": os.path.basename(current_media),
                 "playing": False,
                 "paused": False,
+                "ended": True,
                 "length": length,
                 "position": length
             })
@@ -136,11 +137,12 @@ def status():
             "file": os.path.basename(current_media),
             "playing": state == vlc.State.Playing,
             "paused": state == vlc.State.Paused,
+            "ended": False,
             "length": length,
             "position": time_pos
         })
 
-    return jsonify({"playing": False, "paused": False})
+    return jsonify({"playing": False, "paused": False, "ended": False})
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
