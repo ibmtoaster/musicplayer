@@ -1,5 +1,6 @@
 import os
 import vlc
+import sys
 import time
 import threading
 from flask import Flask, render_template, jsonify, request
@@ -114,16 +115,23 @@ def seek():
     return jsonify({"status": "seeked", "position": pos})
 
 
+
 @app.route("/status")
 def status():
     state = player.get_state()
+    length = player.get_length() // 1000 if current_media else 0
+    time_pos = player.get_time() // 1000 if current_media else 0
+
+    # Debug logging
+    print(
+        f"[DEBUG] state={state}, length={length}, pos={time_pos}, "
+        f"is_playing={player.is_playing()}, paused={paused}",
+        file=sys.stderr,
+        flush=True
+    )
 
     if current_media:
-        length = player.get_length() // 1000
-        time_pos = player.get_time() // 1000
-
         if state == vlc.State.Ended:
-            # Force it to show full length when finished
             return jsonify({
                 "file": os.path.basename(current_media),
                 "playing": False,
