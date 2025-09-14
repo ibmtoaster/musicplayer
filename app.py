@@ -116,28 +116,30 @@ def seek():
 
 @app.route("/status")
 def status():
-    if current_media and (player.is_playing() or paused):
+    state = player.get_state()
+
+    if current_media:
         length = player.get_length() // 1000
         time_pos = player.get_time() // 1000
 
-        if length > 0:
-            # If within 5 seconds of end → snap to finished
-            if time_pos >= length - 5:
-                return jsonify({
-                    "file": os.path.basename(current_media),
-                    "playing": False,
-                    "paused": False,
-                    "length": length,
-                    "position": length
-                })
+        # If VLC says playback ended → snap to finished
+        if state == vlc.State.Ended:
+            return jsonify({
+                "file": os.path.basename(current_media),
+                "playing": False,
+                "paused": False,
+                "length": length,
+                "position": length
+            })
 
         return jsonify({
             "file": os.path.basename(current_media),
-            "playing": player.is_playing(),
-            "paused": paused,
+            "playing": state == vlc.State.Playing,
+            "paused": state == vlc.State.Paused,
             "length": length,
             "position": time_pos
         })
+
     return jsonify({"playing": False, "paused": False})
 
 if __name__ == "__main__":
