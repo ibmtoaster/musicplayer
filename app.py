@@ -122,16 +122,9 @@ def status():
     length = player.get_length() // 1000 if current_media else 0
     time_pos = player.get_time() // 1000 if current_media else 0
 
-    # Debug logging
-    print(
-        f"[DEBUG] state={state}, length={length}, pos={time_pos}, "
-        f"is_playing={player.is_playing()}, paused={paused}",
-        file=sys.stderr,
-        flush=True
-    )
-
     if current_media:
         if state == vlc.State.Ended:
+            # Snap to full length and mark ended
             return jsonify({
                 "file": os.path.basename(current_media),
                 "playing": False,
