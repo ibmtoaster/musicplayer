@@ -121,10 +121,8 @@ def status():
         time_pos = player.get_time() // 1000
 
         if length > 0:
-            # Clamp at length if near end
-            if time_pos >= length - 1:
-                time_pos = length
-                # treat as stopped once fully reached
+            # If within 2 seconds of end → snap to end
+            if time_pos >= length - 2:
                 return jsonify({
                     "file": os.path.basename(current_media),
                     "playing": False,
@@ -141,7 +139,6 @@ def status():
             "position": time_pos
         })
     return jsonify({"playing": False, "paused": False})
-
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
