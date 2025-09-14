@@ -122,9 +122,17 @@ def status():
     length = player.get_length() // 1000 if current_media else 0
     time_pos = player.get_time() // 1000 if current_media else 0
 
+    # Debug logging (always on)
+    print(
+        f"[DEBUG] state={state}, length={length}, pos={time_pos}, "
+        f"is_playing={player.is_playing()}, paused={paused}",
+        file=sys.stderr,
+        flush=True
+    )
+
     if current_media:
+        # Case 1: VLC says playback ended
         if state == vlc.State.Ended:
-            # Snap to full length and mark ended
             return jsonify({
                 "file": os.path.basename(current_media),
                 "playing": False,
@@ -134,6 +142,18 @@ def status():
                 "position": length
             })
 
+        # Case 2: VLC explicitly stopped
+        if state == vlc.State.Stopped:
+            return jsonify({
+                "file": os.path.basename(current_media),
+                "playing": False,
+                "paused": False,
+                "ended": False,
+                "length": length,
+                "position": 0
+            })
+
+        # Case 3: Normal playback or paused
         return jsonify({
             "file": os.path.basename(current_media),
             "playing": state == vlc.State.Playing,
@@ -143,6 +163,7 @@ def status():
             "position": time_pos
         })
 
+    # Case 4: No media loaded
     return jsonify({"playing": False, "paused": False, "ended": False})
 
 if __name__ == "__main__":
