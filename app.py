@@ -120,9 +120,18 @@ def status():
         length = player.get_length() // 1000
         time_pos = player.get_time() // 1000
 
-        # Clamp so progress can reach 100%
-        if length > 0 and time_pos >= length - 1:
-            time_pos = length
+        if length > 0:
+            # Clamp at length if near end
+            if time_pos >= length - 1:
+                time_pos = length
+                # treat as stopped once fully reached
+                return jsonify({
+                    "file": os.path.basename(current_media),
+                    "playing": False,
+                    "paused": False,
+                    "length": length,
+                    "position": length
+                })
 
         return jsonify({
             "file": os.path.basename(current_media),
@@ -132,7 +141,6 @@ def status():
             "position": time_pos
         })
     return jsonify({"playing": False, "paused": False})
-
 
 
 if __name__ == "__main__":
