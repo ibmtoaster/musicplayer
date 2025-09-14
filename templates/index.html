@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Raspberry Pi Music Player</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    ul { list-style-type: none; padding: 0; }
+    li { margin: 5px 0; }
+    button { margin: 2px; padding: 4px 8px; }
+    #progress { width: 100%; height: 20px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h1>Music Player</h1>
+  <p><strong>Current directory:</strong> /{{ current }}</p>
+
+  {% if parent %}
+    <p><a href="/browse/{{ parent }}">⬅️ Up one level</a></p>
+  {% endif %}
+
+  <ul>
+    {% for item in files %}
+      <li>
+        {% if item.type == "dir" %}
+          📁 <a href="/browse/{{ current }}/{{ item.name }}">{{ item.name }}</a>
+        {% else %}
+          🎵 {{ item.name }}
+          <button onclick="play('{{ item.name }}')">Play</button>
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+
+  <h2>Controls</h2>
+  <button onclick="pause()">Pause</button>
+  <button onclick="resume()">Resume</button>
+  <button onclick="stop()">Stop</button>
+
+  <div>
+    <progress id="progress" value="0" max="100"></progress>
+    <span id="time"></span>
+  </div>
+
+<script>
+let currentFile = null;
+let timer = null;
+let trackLength = 0;
+
+function play(file) {
+  fetch("/play", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({filename: file})
+  }).then(r => r.json()).then(data => {
+    currentFile = file;
+    if (!timer) {
+      timer = setInterval(updateStatus, 1000);
+    }
+  });
+}
+
+function stop() {
+  fetch("/stop", {method: "POST"}).then(() => {
+    clearInterval(timer);
+    timer = null;
+    document.getElementById("progress").value = 0;
+    document.getElementById("time").innerText = "";
+  });
+}
+
+function pause() { fetch("/pause", {method: "POST"}); }
+function resume() { fetch("/resume", {method: "POST"}); }
+
+function updateStatus() {
+  fetch("/status").then(r => r.json()).then(data => {
+    if (data.playing || data.paused) {
+      trackLength = data.length;
+      let pct = (data.position / data.length) * 100;
+      document.getElementById("progress").value = pct;
+      document.getElementById("time").innerText =
+        `${data.position}s / ${data.length}s` +
+        (data.paused ? " (Paused)" : "");
+    }
+  });
+}
+
+document.getElementById("progress").addEventListener("click", function(e) {
+  if (trackLength > 0) {
+    const rect = this.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const pct = clickX / rect.width;
+    const newPos = Math.floor(trackLength * pct);
+    fetch("/seek", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({position: newPos})
+    });
+  }
+});
+</script>
+</body>
+</html>
