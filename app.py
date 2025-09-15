@@ -108,13 +108,12 @@ def resume():
     return jsonify({"status": "not paused"})
 
 
-@app.route("/seek", methods=["POST"])
-def seek():
-    pos = request.json.get("position", 0)
-    player.set_time(pos * 1000)  # ms
-    return jsonify({"status": "seeked", "position": pos})
-
-
+@app.route("/seek/<int:seconds>", methods=["POST"])
+def seek(seconds):
+    global player
+    if player is not None:
+        player.set_time(seconds * 1000)  # VLC takes milliseconds
+    return ("", 204)
 
 @app.route("/status")
 def status():
