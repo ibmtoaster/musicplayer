@@ -68,17 +68,18 @@ function formatTime(seconds) {
     }
 }
 
-function play(file) {
-  fetch("/play", {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({filename: file})
-  }).then(r => r.json()).then(data => {
-    currentFile = file;
-    if (!timer) {
-      timer = setInterval(updateStatus, 1000);
+
+async function play(filename) {
+    try {
+        await fetch("/play", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ filename: filename })
+        });
+        console.log("Now playing:", filename);
+    } catch (err) {
+        console.error("Error playing file:", err);
     }
-  });
 }
 
 function stop() {
