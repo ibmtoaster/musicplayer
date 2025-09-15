@@ -89,10 +89,12 @@ async function updateStatus() {
 
         if (data.ended) {
             // ✅ song ended
-            statusEl.innerText = `${data.position}s / ${data.length}s (Ended)`;
+            statusEl.innerText = `Stopped`;
             pauseBtn.disabled = true;
             resumeBtn.disabled = true;
             stopBtn.disabled = true;
+            progressEL.max = 0;
+            progressEl.value = 0;
         }
         else if (data.playing) {
             // ✅ currently playing
