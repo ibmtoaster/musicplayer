@@ -36,10 +36,10 @@
   <button onclick="pause()">Pause</button>
   <button onclick="resume()">Resume</button>
   <button onclick="stop()">Stop</button>
-
-  <input type="range" id="progress" value="0" min="0" max="0" step="1"
+  <div>
+    <input type="range" id="progress" value="0" min="0" max="0" step="1"
       style="width:300px;">
-
+  </div>
   <!--
   <div>
     <progress id="progress" value="0" max="100"></progress>
@@ -140,19 +140,11 @@ async function updateStatus() {
     }
 }
 
-document.getElementById("progress").addEventListener("click", function(e) {
-  if (trackLength > 0) {
-    const rect = this.getBoundingClientRect();
-    const clickX = e.clientX - rect.left;
-    const pct = clickX / rect.width;
-    const newPos = Math.floor(trackLength * pct);
-    fetch("/seek", {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({position: newPos})
-    });
-  }
+document.getElementById("progress").addEventListener("input", async (e) => {
+    const pos = e.target.value;
+    await fetch(`/seek/${pos}`, { method: "POST" });
 });
+
 </script>
 </body>
 </html>
