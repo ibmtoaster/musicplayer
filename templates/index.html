@@ -47,6 +47,18 @@ let currentFile = null;
 let timer = null;
 let trackLength = 0;
 
+function formatTime(seconds) {
+    if (!seconds || seconds < 0) return "0:00";
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = Math.floor(seconds % 60);
+    if (h > 0) {
+        return `${h}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+    } else {
+        return `${m}:${s.toString().padStart(2, "0")}`;
+    }
+}
+
 function play(file) {
   fetch("/play", {
     method: "POST",
@@ -98,7 +110,7 @@ async function updateStatus() {
         }
         else if (data.playing) {
             // ✅ currently playing
-            statusEl.innerText = `${data.position}s / ${data.length}s (Playing)`;
+            statusEl.innerText = `${formatTime(data.position)} / ${formatTime(data.length)} (Playing)`;
             pauseBtn.disabled = false;
             resumeBtn.disabled = true;
             stopBtn.disabled = false;
