@@ -77,7 +77,8 @@ def play_post():
         player.set_media(media)
         player.play()
         current_file = os.path.basename(filepath)
-        return ("", 204)
+        #return ("", 204)
+        return jsonify(success=True)
 
     return ("File not found", 404)
 
