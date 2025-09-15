@@ -37,7 +37,7 @@
   <button onclick="resume()">Resume</button>
   <button onclick="stop()">Stop</button>
   <div>
-    <input type="range" id="progress" value="0" min="0" max="0" step="1"
+    <input type="range" id="progress" value="0" min="0" max="100" step="1"
       style="width:300px;">
   </div>
   <div id="nowPlaying">No song playing</div>
@@ -111,8 +111,8 @@ async function updateStatus() {
         progressEl.value = data.position || 0;
 
          // update progress bar
-        if (status.length > 0) {
-            const percent = (status.position / status.length) * 100;
+        if (data.length > 0) {
+            const percent = (data.position / data.length) * 100;
             progressEl.value = percent;
         } else {
             progressEl.value = 0;
