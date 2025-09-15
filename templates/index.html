@@ -42,6 +42,8 @@
     <span id="time"></span>
   </div>
 
+  <!-- status text (time display) -->
+  <div id="status">Stopped</div>
 <script>
 let currentFile = null;
 let timer = null;
@@ -100,30 +102,29 @@ async function updateStatus() {
         progressEl.value = data.position || 0;
 
         if (data.ended) {
-            // ✅ song ended
-            statusEl.innerText = `Stopped`;
+            // ✅ song finished or stopped
+            statusEl.innerText = "Stopped";
             pauseBtn.disabled = true;
             resumeBtn.disabled = true;
             stopBtn.disabled = true;
-            progressEL.max = 0;
+            progressEl.max = 0;
             progressEl.value = 0;
         }
         else if (data.playing) {
-            // ✅ currently playing
-            statusEl.innerText = `${formatTime(data.position)} / ${formatTime(data.length)} (Playing)`;
+            statusEl.innerText =
+                `${formatTime(data.position)} / ${formatTime(data.length)} (Playing)`;
             pauseBtn.disabled = false;
             resumeBtn.disabled = true;
             stopBtn.disabled = false;
         }
         else if (data.paused) {
-            // ✅ paused state
-            statusEl.innerText = `${data.position}s / ${data.length}s (Paused)`;
+            statusEl.innerText =
+                `${formatTime(data.position)} / ${formatTime(data.length)} (Paused)`;
             pauseBtn.disabled = true;
             resumeBtn.disabled = false;
             stopBtn.disabled = false;
         }
         else {
-            // ✅ idle/stopped state
             statusEl.innerText = "Stopped";
             pauseBtn.disabled = true;
             resumeBtn.disabled = true;
