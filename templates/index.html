@@ -154,6 +154,12 @@ document.getElementById("progress").addEventListener("input", async (e) => {
     await fetch(`/seek/${pos}`, { method: "POST" });
 });
 
+// ✅ poll every second
+setInterval(updateStatus, 1000);
+
+// run once immediately on load
+updateStatus();
+
 </script>
 </body>
 </html>
