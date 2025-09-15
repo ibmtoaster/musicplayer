@@ -130,7 +130,7 @@ async function updateStatus() {
             stopBtn.disabled = true;
             progressEl.max = 0;
             progressEl.value = 0;
-            songEl.innerText = data.song ? 'Playing: ${data.song}' : "Unknown song";
+            songEl.innerText = "";
         }
         else if (data.playing) {
             statusEl.innerText =
@@ -138,7 +138,7 @@ async function updateStatus() {
             pauseBtn.disabled = false;
             resumeBtn.disabled = true;
             stopBtn.disabled = false;
-            songEl.innerText = data.song ? 'Playing: ${data.song}' : "Unknown song";
+            songEl.innerText = data.song;
         }
         else if (data.paused) {
             statusEl.innerText =
@@ -146,7 +146,7 @@ async function updateStatus() {
             pauseBtn.disabled = true;
             resumeBtn.disabled = false;
             stopBtn.disabled = false;
-            songEl.innerText = data.song ? 'Playing: ${data.song}' : "Unknown song";
+            songEl.innerText = data.song;
         }
         else {
             statusEl.innerText = "Stopped";
