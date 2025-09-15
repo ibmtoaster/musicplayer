@@ -72,17 +72,52 @@ function stop() {
 function pause() { fetch("/pause", {method: "POST"}); }
 function resume() { fetch("/resume", {method: "POST"}); }
 
-function updateStatus() {
-  fetch("/status").then(r => r.json()).then(data => {
-    if (data.playing || data.paused) {
-      trackLength = data.length;
-      let pct = (data.position / data.length) * 100;
-      document.getElementById("progress").value = pct;
-      document.getElementById("time").innerText =
-        `${data.position}s / ${data.length}s` +
-        (data.paused ? " (Paused)" : "");
+async function updateStatus() {
+    try {
+        const res = await fetch("/status");
+        const data = await res.json();
+
+        const statusEl = document.getElementById("status");
+        const progressEl = document.getElementById("progress");
+        const pauseBtn = document.getElementById("pauseBtn");
+        const resumeBtn = document.getElementById("resumeBtn");
+        const stopBtn = document.getElementById("stopBtn");
+
+        // keep progress bar in sync
+        progressEl.max = data.length || 0;
+        progressEl.value = data.position || 0;
+
+        if (data.ended) {
+            // ✅ song ended
+            statusEl.innerText = `${data.position}s / ${data.length}s (Ended)`;
+            pauseBtn.disabled = true;
+            resumeBtn.disabled = true;
+            stopBtn.disabled = true;
+        }
+        else if (data.playing) {
+            // ✅ currently playing
+            statusEl.innerText = `${data.position}s / ${data.length}s (Playing)`;
+            pauseBtn.disabled = false;
+            resumeBtn.disabled = true;
+            stopBtn.disabled = false;
+        }
+        else if (data.paused) {
+            // ✅ paused state
+            statusEl.innerText = `${data.position}s / ${data.length}s (Paused)`;
+            pauseBtn.disabled = true;
+            resumeBtn.disabled = false;
+            stopBtn.disabled = false;
+        }
+        else {
+            // ✅ idle/stopped state
+            statusEl.innerText = "Stopped";
+            pauseBtn.disabled = true;
+            resumeBtn.disabled = true;
+            stopBtn.disabled = true;
+        }
+    } catch (err) {
+        console.error("Error updating status:", err);
     }
-  });
 }
 
 document.getElementById("progress").addEventListener("click", function(e) {
