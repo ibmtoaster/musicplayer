@@ -138,8 +138,8 @@ def status():
                 "playing": False,
                 "paused": False,
                 "ended": True,
-                "length": length,
-                "position": length
+                "length": 0,
+                "position": 0
             })
 
         # Case 2: VLC explicitly stopped
