@@ -38,7 +38,7 @@
   <button onclick="stop()">Stop</button>
   <div>
     <input type="range" id="progress" value="0" min="0" max="100" step="1"
-      style="width:300px;">
+      style="width:500px;">
   </div>
   <!-- status text (time display) -->
   <div id="status">Stopped</div>
@@ -145,9 +145,19 @@ async function updateStatus() {
     }
 }
 
-document.getElementById("progress").addEventListener("input", async (e) => {
-    const pos = e.target.value;
-    await fetch(`/seek/${pos}`, { method: "POST" });
+const progressBar = document.getElementById("progress");
+progressBar.addEventListener("click", async function (e) {
+    const rect = progressBar.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const percent = clickX / rect.width;
+
+    console.log("[DEBUG] Seeking to:", percent);
+
+    await fetch("/seek", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ position: percent })
+    });
 });
 
 // ✅ poll every second

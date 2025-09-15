@@ -110,12 +110,23 @@ def resume():
     return jsonify({"status": "not paused"})
 
 
-@app.route("/seek/<int:seconds>", methods=["POST"])
-def seek(seconds):
+@app.route("/seek", methods=["POST"])
+def seek():
     global player
+    data = request.get_json()
+
+    if not data or "position" not in data:
+        print("DEBUG /seek: No position provided", file=sys.stderr, flush=True)
+        return jsonify(success=False, error="No position provided"), 400
+
+    new_pos = float(data["position"])  # fraction between 0.0 and 1.0
+    print(f"DEBUG /seek: ${new_pos}", file=sys.stderr, flush=True)
     if player is not None:
-        player.set_time(seconds * 1000)  # VLC takes milliseconds
-    return ("", 204)
+        player.set_position(new_pos)
+        return jsonify(success=True)
+
+    return jsonify(success=False, error="No active player")
+
 
 @app.route("/status")
 def status():
