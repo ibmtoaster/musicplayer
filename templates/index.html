@@ -99,6 +99,9 @@ async function updateStatus() {
         const res = await fetch("/status");
         const data = await res.json();
 
+        console.log("[DEBUG]", status); // check browser console
+
+
         const statusEl = document.getElementById("status");
         const progressEl = document.getElementById("progress");
         const pauseBtn = document.getElementById("pauseBtn");
@@ -131,7 +134,7 @@ async function updateStatus() {
         }
         else if (data.playing) {
             statusEl.innerText =
-                `${formatTime(data.position)} / ${formatTime(data.length)} (Playing: {data.song})`;
+                `${formatTime(data.position)} / ${formatTime(data.length)} (Playing: ${data.song})`;
             pauseBtn.disabled = false;
             resumeBtn.disabled = true;
             stopBtn.disabled = false;
