@@ -64,6 +64,14 @@ def play_post():
         return ("Missing filename", 400)
 
     filepath = os.path.join(MUSIC_DIR, data["filename"])
+    
+    # Debug logging (always on)
+    print(
+        f"[DEBUG] filepath={filepath}",
+        file=sys.stderr,
+        flush=True
+    )
+    
     if os.path.isfile(filepath):
         media = instance.media_new(filepath)
         player.set_media(media)
