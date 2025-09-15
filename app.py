@@ -126,7 +126,7 @@ def status():
 
     # Debug logging (always on)
     print(
-        f"[DEBUG] state={state}, length={length}, pos={time_pos}, current_file={current_file} current_media={current_media}"
+        f"[DEBUG] state={state}, length={length}, pos={time_pos}, current_media={current_media}"
         f"is_playing={player.is_playing()}, paused={paused}",
         file=sys.stderr,
         flush=True
@@ -142,7 +142,7 @@ def status():
                 "ended": True,
                 "length": 0,
                 "position": 0,
-                "song": current_file
+                "song": current_media
             })
 
         # Case 2: VLC explicitly stopped
@@ -164,7 +164,7 @@ def status():
             "ended": False,
             "length": length,
             "position": time_pos,
-            "song": current_file
+            "song": current_media
         })
 
     # Case 4: No media loaded
