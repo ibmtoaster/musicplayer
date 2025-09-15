@@ -17,7 +17,7 @@ current_media = None
 progress_thread = None
 running = False
 paused = False
-
+current_file = None  # add at the top, global variable
 
 def progress_updater():
     global running
@@ -78,6 +78,16 @@ def play():
 
     return jsonify({"status": "playing", "file": filename})
 
+@app.route("/play/<path:filename>")
+def play(filename):
+    global player, current_file
+    filepath = os.path.join(MUSIC_DIR, filename)
+    if os.path.isfile(filepath):
+        media = instance.media_new(filepath)
+        player.set_media(media)
+        player.play()
+        current_file = os.path.basename(filepath)   # ✅ store name only
+    return ("", 204)
 
 @app.route("/stop", methods=["POST"])
 def stop():
@@ -117,6 +127,7 @@ def seek(seconds):
 
 @app.route("/status")
 def status():
+    global player, current_file
     state = player.get_state()
     length = player.get_length() // 1000 if current_media else 0
     time_pos = player.get_time() // 1000 if current_media else 0
@@ -138,7 +149,8 @@ def status():
                 "paused": False,
                 "ended": True,
                 "length": 0,
-                "position": 0
+                "position": 0,
+                "song": current_file
             })
 
         # Case 2: VLC explicitly stopped
@@ -159,7 +171,8 @@ def status():
             "paused": state == vlc.State.Paused,
             "ended": False,
             "length": length,
-            "position": time_pos
+            "position": time_pos,
+            "song": current_file
         })
 
     # Case 4: No media loaded
