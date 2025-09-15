@@ -110,6 +110,14 @@ async function updateStatus() {
         progressEl.max = data.length || 0;
         progressEl.value = data.position || 0;
 
+         // update progress bar
+        if (status.length > 0) {
+            const percent = (status.position / status.length) * 100;
+            progressEl.value = percent;
+        } else {
+            progressEl.value = 0;
+        }
+
         if (data.ended) {
             // ✅ song finished or stopped
             statusEl.innerText = "Stopped";
