@@ -17,7 +17,6 @@ current_media = None
 progress_thread = None
 running = False
 paused = False
-current_file = None  # add at the top, global variable
 
 def progress_updater():
     global running
@@ -58,7 +57,7 @@ def browse(path=""):
 
 @app.route("/play", methods=["POST"])
 def play_post():
-    global player, current_file
+    global player, current_media
     data = request.get_json()
     if not data or "filename" not in data:
         return ("Missing filename", 400)
@@ -76,7 +75,7 @@ def play_post():
         media = instance.media_new(filepath)
         player.set_media(media)
         player.play()
-        current_file = os.path.basename(filepath)
+        current_media = os.path.basename(filepath)
         #return ("", 204)
         return jsonify(success=True)
 
@@ -120,14 +119,14 @@ def seek(seconds):
 
 @app.route("/status")
 def status():
-    global player, current_file
+    global player, current_media
     state = player.get_state()
     length = player.get_length() // 1000 if current_media else 0
     time_pos = player.get_time() // 1000 if current_media else 0
 
     # Debug logging (always on)
     print(
-        f"[DEBUG] state={state}, length={length}, pos={time_pos}, current_file={current_file} "
+        f"[DEBUG] state={state}, length={length}, pos={time_pos}, current_file={current_file} current_media={current_media}"
         f"is_playing={player.is_playing()}, paused={paused}",
         file=sys.stderr,
         flush=True
