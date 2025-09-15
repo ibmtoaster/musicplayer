@@ -126,7 +126,7 @@ def status():
 
     # Debug logging (always on)
     print(
-        f"[DEBUG] state={state}, length={length}, pos={time_pos}, current_media={current_media}"
+        f"[DEBUG] state={state}, length={length}, time_pos={time_pos}, current_media={current_media}"
         f"is_playing={player.is_playing()}, paused={paused}",
         file=sys.stderr,
         flush=True

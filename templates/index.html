@@ -131,7 +131,7 @@ async function updateStatus() {
         }
         else if (data.playing) {
             statusEl.innerText =
-                `${formatTime(data.position)} / ${formatTime(data.length)} (Playing)`;
+                `${formatTime(data.position)} / ${formatTime(data.length)} (Playing: {data.song})`;
             pauseBtn.disabled = false;
             resumeBtn.disabled = true;
             stopBtn.disabled = false;
