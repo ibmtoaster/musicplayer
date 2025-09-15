@@ -56,16 +56,22 @@ def browse(path=""):
     )
 
 
-@app.route("/play", methods=["Post"])
-def play(filename):
+@app.route("/play", methods=["POST"])
+def play_post():
     global player, current_file
-    filepath = os.path.join(MUSIC_DIR, filename)
+    data = request.get_json()
+    if not data or "filename" not in data:
+        return ("Missing filename", 400)
+
+    filepath = os.path.join(MUSIC_DIR, data["filename"])
     if os.path.isfile(filepath):
         media = instance.media_new(filepath)
         player.set_media(media)
         player.play()
-        current_file = os.path.basename(filepath)   # ✅ store name only
-    return ("", 204)
+        current_file = os.path.basename(filepath)
+        return ("", 204)
+
+    return ("File not found", 404)
 
 @app.route("/stop", methods=["POST"])
 def stop():
