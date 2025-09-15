@@ -56,7 +56,7 @@ def browse(path=""):
     )
 
 
-@app.route("/play/<path:filename>")
+@app.route("/play", methods=["Post"])
 def play(filename):
     global player, current_file
     filepath = os.path.join(MUSIC_DIR, filename)
