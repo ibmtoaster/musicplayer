@@ -105,6 +105,7 @@ async function updateStatus() {
         const resumeBtn = document.getElementById("resumeBtn");
         const stopBtn = document.getElementById("stopBtn");
         const songEl = document.getElementById("nowPlaying");
+        songEl.innerText = "Hello nowPlaying";
 
         // keep progress bar in sync
         progressEl.max = data.length || 0;
