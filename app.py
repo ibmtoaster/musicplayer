@@ -56,28 +56,6 @@ def browse(path=""):
     )
 
 
-@app.route("/play", methods=["POST"])
-def play():
-    global current_media, running, progress_thread, paused
-
-    filename = request.json["filename"]
-    rel_dir = request.json.get("directory", "")
-    filepath = os.path.join(MUSIC_DIR, rel_dir, filename)
-
-    media = instance.media_new(filepath)
-    player.set_media(media)
-    player.play()
-
-    current_media = filepath
-    paused = False
-
-    if not running:
-        running = True
-        progress_thread = threading.Thread(target=progress_updater, daemon=True)
-        progress_thread.start()
-
-    return jsonify({"status": "playing", "file": filename})
-
 @app.route("/play/<path:filename>")
 def play(filename):
     global player, current_file
