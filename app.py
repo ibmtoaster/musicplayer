@@ -3,6 +3,7 @@ import vlc
 import sys
 import time
 import threading
+from urllib.parse import unquote
 from flask import Flask, render_template, jsonify, request
 
 MUSIC_DIR = "/home/pi/Music"  # <-- Change to your music folder
