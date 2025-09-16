@@ -28,8 +28,11 @@ def progress_updater():
 @app.route("/browse", defaults={"path": ""})
 @app.route("/browse/<path:path>")
 def browse(path=""):
+    # Decode any %xx escapes from the URL
+    safe_path = unquote(path)
+    
     """Browse directory and list audio files + subfolders."""
-    abs_path = os.path.join(MUSIC_DIR, path)
+    abs_path = os.path.join(MUSIC_DIR, safe_path)
     abs_path = os.path.abspath(abs_path)
 
     # prevent escaping root
