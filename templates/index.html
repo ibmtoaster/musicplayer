@@ -153,6 +153,9 @@ progressBar.addEventListener("click", async function (e) {
 
     console.log("[DEBUG] Seeking to:", percent);
 
+    // Optimistically update UI
+    progressBar.value = percent * 100;
+
     await fetch("/seek", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
