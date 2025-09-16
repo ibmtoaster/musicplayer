@@ -34,17 +34,23 @@ def browse(path):
     for entry in os.scandir(abs_dir):
         entries.append({
             "name": entry.name,
-            # 👇 include subdirectory in relative path
             "path": os.path.join(safe_path, entry.name),
             "is_dir": entry.is_dir()
         })
-    
-    # Choose what to display at the top
-    current_label = safe_path if safe_path else os.path.basename(MUSIC_DIR)
+
+    # Build breadcrumbs
+    parts = safe_path.split("/") if safe_path else []
+    breadcrumbs = []
+    cumulative = ""
+    for part in parts:
+        cumulative = os.path.join(cumulative, part) if cumulative else part
+        breadcrumbs.append({"name": part, "path": cumulative})
 
     return render_template("index.html",
                            items=entries,
-                           current_dir=current_label)
+                           breadcrumbs=breadcrumbs,
+                           at_root=(safe_path == ""))
+
 
 # @app.route("/")
 # @app.route("/browse", defaults={"path": ""})
