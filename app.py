@@ -38,8 +38,13 @@ def browse(path):
             "path": os.path.join(safe_path, entry.name),
             "is_dir": entry.is_dir()
         })
+    
+    # Choose what to display at the top
+    current_label = safe_path if safe_path else os.path.basename(MUSIC_DIR)
 
-    return render_template("index.html", items=entries)
+    return render_template("index.html",
+                           items=entries,
+                           current_dir=current_label)
 
 # @app.route("/")
 # @app.route("/browse", defaults={"path": ""})
