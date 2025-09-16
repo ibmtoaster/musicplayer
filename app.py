@@ -66,11 +66,14 @@ def play_post():
     if not data or "filename" not in data:
         return ("Missing filename", 400)
 
-    filepath = os.path.join(MUSIC_DIR, data["filename"])
+    # Decode URL-encoded paths if any (sometimes JS or template escapes them)
+    safe_path = unquote(data["filename"])
+
+    filepath = os.path.join(MUSIC_DIR, safe_path)
     
     # Debug logging (always on)
     print(
-        f"[DEBUG] filepath={filepath}",
+        f"[DEBUG] filepath={filepath} data[filename]={data["filename"]}",
         file=sys.stderr,
         flush=True
     )
