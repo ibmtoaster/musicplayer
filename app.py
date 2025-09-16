@@ -73,7 +73,7 @@ def play_post():
     
     # Debug logging (always on)
     print(
-        f"[DEBUG] filepath={filepath} data[filename]={data["filename"]}",
+        f"[DEBUG] filepath={filepath} data[filename]={data['filename']}",
         file=sys.stderr,
         flush=True
     )
