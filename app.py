@@ -24,39 +24,55 @@ def progress_updater():
     while running:
         time.sleep(1)
 
-
-@app.route("/")
-@app.route("/browse", defaults={"path": ""})
-@app.route("/browse/<path:path>")
-def browse(path=""):
-    # Decode any %xx escapes from the URL
+@app.route("/", defaults={"path": ""})
+@app.route("/<path:path>")
+def browse(path):
     safe_path = unquote(path)
-    
-    """Browse directory and list audio files + subfolders."""
-    abs_path = os.path.join(MUSIC_DIR, safe_path)
-    abs_path = os.path.abspath(abs_path)
+    abs_dir = os.path.join(MUSIC_DIR, safe_path)
 
-    # prevent escaping root
-    if not abs_path.startswith(MUSIC_DIR):
-        abs_path = MUSIC_DIR
+    entries = []
+    for entry in os.scandir(abs_dir):
+        entries.append({
+            "name": entry.name,
+            # 👇 include subdirectory in relative path
+            "path": os.path.join(safe_path, entry.name),
+            "is_dir": entry.is_dir()
+        })
 
-    items = []
-    for f in os.listdir(abs_path):
-        full = os.path.join(abs_path, f)
-        if os.path.isdir(full):
-            items.append({"type": "dir", "name": f})
-        elif f.lower().endswith((".mp3", ".wav", ".flac", ".ogg", "m4a")):
-            items.append({"type": "file", "name": f})
+    return render_template("index.html", items=entries)
 
-    rel_path = os.path.relpath(abs_path, MUSIC_DIR)
-    if rel_path == ".":
-        rel_path = ""
-
-    parent = os.path.dirname(rel_path) if rel_path else None
-
-    return render_template(
-        "index.html", files=items, current=rel_path, parent=parent
-    )
+# @app.route("/")
+# @app.route("/browse", defaults={"path": ""})
+# @app.route("/browse/<path:path>")
+# def browse(path=""):
+#     # Decode any %xx escapes from the URL
+#     safe_path = unquote(path)
+#     
+#     """Browse directory and list audio files + subfolders."""
+#     abs_path = os.path.join(MUSIC_DIR, safe_path)
+#     abs_path = os.path.abspath(abs_path)
+# 
+#     # prevent escaping root
+#     if not abs_path.startswith(MUSIC_DIR):
+#         abs_path = MUSIC_DIR
+# 
+#     items = []
+#     for f in os.listdir(abs_path):
+#         full = os.path.join(abs_path, f)
+#         if os.path.isdir(full):
+#             items.append({"type": "dir", "name": f})
+#         elif f.lower().endswith((".mp3", ".wav", ".flac", ".ogg", "m4a")):
+#             items.append({"type": "file", "name": f})
+# 
+#     rel_path = os.path.relpath(abs_path, MUSIC_DIR)
+#     if rel_path == ".":
+#         rel_path = ""
+# 
+#     parent = os.path.dirname(rel_path) if rel_path else None
+# 
+#     return render_template(
+#         "index.html", files=items, current=rel_path, parent=parent
+#     )
 
 
 @app.route("/play", methods=["POST"])

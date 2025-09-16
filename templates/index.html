@@ -20,6 +20,22 @@
   {% endif %}
 
   <ul>
+    {% for item in items %}
+      {% if item.is_dir %}
+        <li>
+          📁 <a href="{{ url_for('browse', path=item.path) }}">{{ item.name }}</a>
+        </li>
+      {% else %}
+        <li>
+          🎵 {{ item.name }}
+          <button onclick="play('{{ item.path }}')">Play</button>
+        </li>
+      {% endif %}
+    {% endfor %}
+  </ul>
+
+  <!--
+  <ul>
     {% for item in files %}
       <li>
         {% if item.type == "dir" %}
@@ -31,6 +47,7 @@
       </li>
     {% endfor %}
   </ul>
+-->
 
   <h2>Controls</h2>
   <button onclick="pause()">Pause</button>
