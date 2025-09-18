@@ -77,6 +77,7 @@ import time
 
 @app.route("/play", methods=["POST"])
 def play():
+    global current_song
     data = request.get_json()
     rel_path = data.get("file")
 
@@ -101,17 +102,19 @@ def play():
             # Just load the first track for now
             media = vlc.Media(tracks[0]['file'])
             player.set_media(media)
+            current_song = os.path.basename(tracks[0]['file'])
         else:
             return jsonify({"error": "No tracks in cue"}), 400
     else:
         media = vlc.Media(abs_file)
         player.set_media(media)
+        current_song = os.path.basename(abs_file)
 
     player.play()
 
     return jsonify({
         "status": "playing",
-        "song": os.path.basename(abs_file),
+        "song": current_song,
         "path": rel_path
     })
 
