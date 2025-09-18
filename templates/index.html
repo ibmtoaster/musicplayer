@@ -68,6 +68,10 @@
           });
           const data = await resp.json();
           console.log("play response", data);
+
+          if (data.song) {
+            document.getElementById("now-playing").innerText = "Now Playing: " + data.song;
+          }
         }
 
         async function play(path) {
