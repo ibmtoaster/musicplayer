@@ -1,198 +1,134 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8">
-  <title>Raspberry Pi Music Player</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 20px; }
-    ul { list-style-type: none; padding: 0; }
-    li { margin: 5px 0; }
-    button { margin: 2px; padding: 4px 8px; }
-    #progress { width: 100%; height: 20px; cursor: pointer; }
-  </style>
+    <meta charset="utf-8">
+    <title>Raspberry Pi Music Player</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .breadcrumb a { text-decoration: none; margin-right: 5px; }
+        .folder, .file { margin: 5px 0; }
+        .progress-container { margin-top: 20px; }
+        #progress { width: 100%; }
+        #controls button { margin-right: 10px; }
+    </style>
 </head>
 <body>
-  <h1>Music Player</h1>
-  <p><strong>Current directory:</strong> /{{ current_dir }}</p>
+    <h1>🎵 Raspberry Pi Music Player</h1>
 
-  <div class="breadcrumbs">
-    <a href="/">Music</a>
-    {% for crumb in breadcrumbs %}
-      / <a href="/{{ crumb.path }}">{{ crumb.name }}</a>
-    {% endfor %}
-  </div>
+    <div>
+      <strong>Current:</strong>
+      {% for crumb in breadcrumbs %}
+        {% if not loop.first %} / {% endif %}
+        <a href="{{ crumb.url }}">{{ crumb.name }}</a>
+      {% endfor %}
+    </div>
 
-  {% if parent %}
-    <p><a href="/browse/{{ parent }}">⬅️ Up one level</a></p>
-  {% endif %}
+    <!-- Breadcrumb -->
+    <div class="breadcrumb">
+        {% for crumb in breadcrumb %}
+            {% if not loop.last %}
+                <a href="{{ url_for('browse', path=crumb.path) }}">{{ crumb.name }}</a> /
+            {% else %}
+                {{ crumb.name }}
+            {% endif %}
+        {% endfor %}
+    </div>
 
-  <ul>
-    {% for item in items %}
-      {% if item.is_dir %}
-        <li>
-          📁 <a href="{{ url_for('browse', path=item.path) }}">{{ item.name }}</a>
-        </li>
-      {% else %}
-        <li>
-          🎵 {{ item.name }}
-          <button onclick="play('{{ item.path }}')">Play</button>
-        </li>
-      {% endif %}
-    {% endfor %}
-  </ul>
-
-  <!--
-  <ul>
-    {% for item in files %}
-      <li>
-        {% if item.type == "dir" %}
-          📁 <a href="/browse/{{ current }}/{{ item.name }}">{{ item.name }}</a>
+    <!-- Directory listing -->
+    <ul>
+    {% for item in entries %}
+    <li>
+        {% if item.is_dir %}
+        <a href="{{ item.url }}">{{ item.name }}/</a>
         {% else %}
-          🎵 {{ item.name }}
-          <button onclick="play('{{ item.name }}')">Play</button>
+        {{ item.name }}
+        <button onclick="playFile('{{ (path ~ '/' if path else '') ~ item.name }}')">Play</button>
         {% endif %}
-      </li>
+    </li>
     {% endfor %}
-  </ul>
--->
+    </ul>
 
-  <h2>Controls</h2>
-  <button onclick="pause()">Pause</button>
-  <button onclick="resume()">Resume</button>
-  <button onclick="stop()">Stop</button>
-  <div>
-    <input type="range" id="progress" value="0" min="0" max="100" step="1"
-      style="width:500px;">
-  </div>
-  <!-- status text (time display) -->
-  <div id="status">Stopped</div>
-<script>
-let currentFile = null;
-let timer = null;
-let trackLength = 0;
+    <!-- Player controls -->
+    <div id="player" class="progress-container">
+        <p id="now-playing">Not playing</p>
+        <progress id="progress" value="0" max="100"></progress>
+        <span id="time"></span>
+        <div id="controls">
+            <button onclick="stopSong()">Stop</button>
+            <button id="pauseResumeBtn" onclick="pauseResume()" disabled>Pause</button>
+        </div>
+    </div>
 
-function formatTime(seconds) {
-    if (!seconds || seconds < 0) return "0:00";
-    const h = Math.floor(seconds / 3600);
-    const m = Math.floor((seconds % 3600) / 60);
-    const s = Math.floor(seconds % 60);
-    if (h > 0) {
-        return `${h}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
-    } else {
-        return `${m}:${s.toString().padStart(2, "0")}`;
-    }
-}
-
-
-async function play(filename) {
-    try {
-        await fetch("/play", {
+    <script>
+        async function playFile(relPath) {
+          const resp = await fetch("/play", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ filename: filename })
-        });
-        console.log("Now playing:", filename);
-    } catch (err) {
-        console.error("Error playing file:", err);
-    }
-}
-
-function stop() {
-  fetch("/stop", {method: "POST"}).then(() => {
-    clearInterval(timer);
-    timer = null;
-    document.getElementById("progress").value = 0;
-    document.getElementById("time").innerText = "";
-  });
-}
-
-function pause() { fetch("/pause", {method: "POST"}); }
-function resume() { fetch("/resume", {method: "POST"}); }
-
-async function updateStatus() {
-    try {
-        const res = await fetch("/status");
-        const data = await res.json();
-
-        console.log("[DEBUG]", status); // check browser console
-
-
-        const statusEl = document.getElementById("status");
-        const progressEl = document.getElementById("progress");
-        const pauseBtn = document.getElementById("pauseBtn");
-        const resumeBtn = document.getElementById("resumeBtn");
-        const stopBtn = document.getElementById("stopBtn");
-
-        // keep progress bar in sync
-        progressEl.max = data.length || 0;
-        progressEl.value = data.position || 0;
-
-         // update progress bar
-        if (data.length > 0) {
-            const percent = (data.position / data.length) * 100;
-            progressEl.value = percent;
-        } else {
-            progressEl.value = 0;
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({file: relPath})
+          });
+          const data = await resp.json();
+          console.log("play response", data);
         }
 
-        if (data.ended) {
-            // ✅ song finished or stopped
-            statusEl.innerText = "Stopped";
-            pauseBtn.disabled = true;
-            resumeBtn.disabled = true;
-            stopBtn.disabled = true;
-            progressEl.max = 0;
-            progressEl.value = 0;
-         }
-        else if (data.playing) {
-            statusEl.innerText =
-                `${formatTime(data.position)} / ${formatTime(data.length)} (Playing: ${data.song})`;
-            pauseBtn.disabled = false;
-            resumeBtn.disabled = true;
-            stopBtn.disabled = false;
+        async function play(path) {
+            await fetch("/play", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ path: path })
+            });
         }
-        else if (data.paused) {
-            statusEl.innerText =
-                `${formatTime(data.position)} / ${formatTime(data.length)} (Paused)`;
-            pauseBtn.disabled = true;
-            resumeBtn.disabled = false;
-            stopBtn.disabled = false;
+
+        async function stopSong() {
+            await fetch("/stop", { method: "POST" });
         }
-        else {
-            statusEl.innerText = "Stopped";
-            pauseBtn.disabled = true;
-            resumeBtn.disabled = true;
-            stopBtn.disabled = true;
+
+        async function pauseResume() {
+            await fetch("/pause", { method: "POST" });
         }
-    } catch (err) {
-        console.error("Error updating status:", err);
-    }
-}
 
-const progressBar = document.getElementById("progress");
-progressBar.addEventListener("click", async function (e) {
-    const rect = progressBar.getBoundingClientRect();
-    const clickX = e.clientX - rect.left;
-    const percent = clickX / rect.width;
+        function formatTime(seconds) {
+            const h = Math.floor(seconds / 3600);
+            const m = Math.floor((seconds % 3600) / 60);
+            const s = seconds % 60;
+            return (h > 0 ? h + ":" : "") +
+                   (m < 10 ? "0" : "") + m + ":" +
+                   (s < 10 ? "0" : "") + s;
+        }
 
-    console.log("[DEBUG] Seeking to:", percent);
+        async function updateStatus() {
+            const res = await fetch("/status");
+            const data = await res.json();
 
-    // Optimistically update UI
-    progressBar.value = percent * 100;
+            // Song name
+            document.getElementById("now-playing").innerText =
+                data.song ? "Now Playing: " + data.song : "Not playing";
 
-    await fetch("/seek", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ position: percent })
-    });
-});
+            // Progress bar
+            if (data.length > 0) {
+                const percent = (data.pos / data.length) * 100;
+                document.getElementById("progress").value = percent;
+                document.getElementById("time").innerText =
+                    formatTime(data.pos) + " / " + formatTime(data.length);
+            } else {
+                document.getElementById("progress").value = 0;
+                document.getElementById("time").innerText = "";
+            }
 
-// ✅ poll every second
-setInterval(updateStatus, 1000);
+            // Buttons
+            const pauseBtn = document.getElementById("pauseResumeBtn");
+            if (data.state === "Playing") {
+                pauseBtn.disabled = false;
+                pauseBtn.innerText = "Pause";
+            } else if (data.state === "Paused") {
+                pauseBtn.disabled = false;
+                pauseBtn.innerText = "Resume";
+            } else {
+                pauseBtn.disabled = true;
+                pauseBtn.innerText = "Pause";
+            }
+        }
 
-// run once immediately on load
-updateStatus();
-
-</script>
+        setInterval(updateStatus, 1000);
+    </script>
 </body>
 </html>
